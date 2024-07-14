@@ -89,12 +89,21 @@ allowed_trade_status = S{
 
 -- Index by spawn point ID
 pop_info = T{
+  -- Abyssea - Konschtat
+  -- Abyssea - Tahrongi
+  -- Abyssea - La Theine
   [17318479] = {id=17318479, name='La Theine Liege', required_items=S{2897}, required_key_items=S{}},
   [17318480] = {id=17318480, name='Baba Yaga', required_items=S{2898}, required_key_items=S{}},
   [17318486] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
   [17318489] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
   [17318492] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
+  -- Abyssea - Attohwa
+  -- Abyssea - Misareaux
   [17662564] = {id=17662564, name='Karkatakam', required_items=S{3093, 3094}, required_key_items=S{}},
+  -- Abyssea - Vunkerl
+  -- Abyssea - Altepa
+  -- Abyssea - Uleguerand
+  -- Abyssea - Grauberg
 }
 -- Replace required_items and required_key_items with more detailed objects
 for entry in pop_info:it() do
@@ -139,6 +148,8 @@ function refresh_ffxi_info()
   local info = windower.ffxi.get_info()
   local zone = info['zone']
   if zone and res.zones[zone] then
+    world.zone_id = zone
+    world.area_id = zone
     world.zone = res.zones[zone].en
     world.area = world.zone
   end
@@ -225,7 +236,7 @@ function pop_target()
           end
         end
       elseif info.required_key_items:length() > 0 then
-        -- If NM requires key items to pop, deal with the popup menu
+        -- If spawn point requires key items, maybe handle this in the future
       end
     end
   end
@@ -306,6 +317,8 @@ windower.register_event('load', function()
 end)
 
 windower.register_event('zone change', function(new_id, old_id)
+  world.zone_id = new_id
+  world.area_id = new_id
   world.zone = res.zones[new_id].en
   world.area = world.zone
 end)
