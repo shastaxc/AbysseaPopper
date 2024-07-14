@@ -67,6 +67,26 @@ abyssea_areas = S{
   'Abyssea - Grauberg',
 }
 
+allowed_trade_status = S{
+  0, --Idle
+  33, --Resting
+  47, --Sitting
+  48, --Kneeling
+  63, --Sitchair 0
+  64, --Sitchair 1
+  65, --Sitchair 2
+  66, --Sitchair 3
+  67, --Sitchair 4
+  68, --Sitchair 5
+  69, --Sitchair 6
+  70, --Sitchair 7
+  71, --Sitchair 8
+  72, --Sitchair 9
+  73, --Sitchair 10
+  74, --Sitchair 11
+  75, --Sitchair 12
+}
+
 -- Index by spawn point ID
 pop_info = T{
   -- La Theine Liege
@@ -215,6 +235,13 @@ function is_in_abyssea()
   return false
 end
 
+-- Returns true if player if in a status that is allowed to perform trades.
+-- For example, will return false if player is dead or mounted.
+function is_status_valid()
+  local player_status = windower.ffxi.get_mob_by_target('me').status
+  return allowed_trade_status:contains(player_status)
+end
+
 -- Takes optional target_id
 function get_pop_info(target_id)
   if is_in_abyssea() then
@@ -258,7 +285,7 @@ windower.register_event('addon command', function(cmd, ...)
       windower.add_to_chat(001, chat_d_blue..'AbysseaPopper: Reloading.')
     elseif S{'trade', 'pop', 'spawn'}:contains(cmd) then
       -- If in Abyssea, attempt to pop target
-      if is_in_abyssea() then
+      if is_in_abyssea() and is_status_valid() then
         pop_target()
       end
     elseif 'info' == cmd then
