@@ -70,13 +70,13 @@ abyssea_areas = S{
 -- Index by spawn point ID
 pop_info = T{
   -- La Theine Liege
-  [17318479] = {id=17318479, required_items=S{2897}, required_key_items=S{}},
+  [17318479] = {id=17318479, name='La Theine Liege', required_items=S{2897}, required_key_items=S{}},
   -- Baba Yaga
-  [17318480] = {id=17318480, required_items=S{2898}, required_key_items=S{}},
+  [17318480] = {id=17318480, name='Baba Yaga', required_items=S{2898}, required_key_items=S{}},
   -- Carabosse
-  [17318486] = {id=17318489, required_items=S{}, required_key_items=S{1485, 1486}},
-  [17318489] = {id=17318489, required_items=S{}, required_key_items=S{1485, 1486}},
-  [17318492] = {id=17318489, required_items=S{}, required_key_items=S{1485, 1486}},
+  [17318486] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
+  [17318489] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
+  [17318492] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
 }
 -- Replace required_items and required_key_items with more detailed objects
 for entry in pop_info:it() do
@@ -149,7 +149,7 @@ function pop_target()
         if info.required_items:length() == 1 then
           -- If only 1 required item, we can use in-game command to pop
           local req_item = info.required_items[1]
-          send_command('@input /item "'..req_item.en..'" <t>')
+          windower.send_command('@input /item "'..req_item.en..'" <t>')
         end
       elseif info.required_key_items:length() > 0 then
         -- If NM requires key items to pop, deal with the popup menu
@@ -159,7 +159,7 @@ function pop_target()
 end
 
 function is_in_abyssea()
-  if abyssea_areas.contains(world.area) then
+  if abyssea_areas:contains(world.area) then
     return true
   end
 
@@ -173,8 +173,10 @@ function get_pop_info(target_id)
       return pop_info[target_id]
     else
       local target = get_target()
-      if target and pop_info[target.id] then
+      if target then
         return pop_info[target.id]
+      else
+        return 'missing_target'
       end
     end
   end
@@ -213,7 +215,11 @@ windower.register_event('addon command', function(cmd, ...)
     elseif 'info' == cmd then
       local pop_info = get_pop_info()
       if pop_info then
-        windower.add_to_chat(001, chat_d_blue..'AbysseaPopper: '..pop_info.name..' pops here.')
+        if pop_info == 'missing_target' then
+          windower.add_to_chat(001, chat_d_blue..'AbysseaPopper: No target selected.')
+        else
+          windower.add_to_chat(001, chat_d_blue..'AbysseaPopper: '..pop_info.name..' pops here.')
+        end
       else
         windower.add_to_chat(001, chat_d_blue..'AbysseaPopper: This is not a supported pop location.')
       end
