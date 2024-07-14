@@ -34,9 +34,9 @@ _addon.commands = {'ap','apop','abysseapopper'}
 -------------------------------------------------------------------------------
 require('tables')
 require('sets')
+require('pack')
 
 res = require('resources')
-packets = require('packets')
 -- inspect = require('inspect')
 
 chat_purple = string.char(0x1F, 200)
@@ -89,14 +89,12 @@ allowed_trade_status = S{
 
 -- Index by spawn point ID
 pop_info = T{
-  -- La Theine Liege
   [17318479] = {id=17318479, name='La Theine Liege', required_items=S{2897}, required_key_items=S{}},
-  -- Baba Yaga
   [17318480] = {id=17318480, name='Baba Yaga', required_items=S{2898}, required_key_items=S{}},
-  -- Carabosse
   [17318486] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
   [17318489] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
   [17318492] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
+  [17662564] = {id=17662564, name='Karkatakam', required_items=S{3093, 3094}, required_key_items=S{}},
 }
 -- Replace required_items and required_key_items with more detailed objects
 for entry in pop_info:it() do
@@ -164,14 +162,19 @@ end
 function items_in_inventory(items_to_find)
   local inventory = windower.ffxi.get_items(0)
   local found_items = T{}
-  for required_item in items_to_find:it() do
-    for _,inv_item in pairs(inventory) do
-      if inv_item.id == required_item.id then
-        found_items[inv_item.id] = inv_item
-        break
+  if inventory then
+    for k,required_item in pairs(items_to_find) do
+      for _,inv_item in pairs(inventory) do
+        if inv_item and type(inv_item) == 'table' and inv_item.id == required_item.id then
+          found_items[inv_item.id] = inv_item
+          break
+        end
       end
     end
+  else
+    windower.add_to_chat(001, chat_red..'AbysseaPopper: Inventory still loading.')
   end
+
   return found_items
 end
 
@@ -181,7 +184,7 @@ end
 function str_missing_items(required_items, found_items)
   local str = ''
   local num_missing = 0
-  for req_item in required_items:it() do
+  for _,req_item in pairs(required_items) do
     if not found_items[req_item.id] then
       num_missing = num_missing + 1
       -- Item is missing, add to list
@@ -199,9 +202,9 @@ end
 -- Attempt to pop NM based on current target
 function pop_target()
   -- Get target info
-  local t = get_target()
-  if t then
-    local info = pop_info[t.id]
+  local target = get_target()
+  if target then
+    local info = pop_info[target.id]
     if info then
       -- If NM requires items to pop, attempt to trade
       if info.required_items:length() > 0 then
@@ -217,7 +220,8 @@ function pop_target()
             local req_item = info.required_items[1]
             windower.send_command('@input /item "'..req_item.en..'" <t>')
           else
-            -- TODO: Trade multiple items, bypassing trade window.
+            -- Trade multiple items, bypassing trade window.
+            send_trade_packet(target, found_inv_items)
           end
         end
       elseif info.required_key_items:length() > 0 then
@@ -258,6 +262,41 @@ function get_pop_info(target_id)
   end
 
   return nil
+end
+
+-- Input: Meta Table. Indexed by item ID. Format of windower.ffxi.get_items(0).
+-- The input table includes the item ID and position in inventory, needed to trade.
+function send_trade_packet(target, found_inv_items)
+  -- Quantity array (first item is gil)
+  local qty = {
+    [1] = 0,
+  }
+  -- Inventory index array (first item is gil)
+  local ind = {
+    [1] = 0,
+  }
+
+  -- Count of items to trade
+  local count = 0
+
+  for item_id, item in pairs(found_inv_items) do
+    count = count + 1
+    qty[count + 1] = 1
+    ind[count + 1] = item.slot
+  end
+
+  -- Fill the rest of the arrays
+  for i=count+2,9 do
+    qty[i] = 0
+    ind[i] = 0
+  end
+
+  local menu_item = ('C4I11C10HI'):pack(0x36,0x20,0x00,0x00, target.id,
+      qty[1],qty[2],qty[3],qty[4],qty[5],qty[6],qty[7],qty[8],qty[9],0x00,
+      ind[1],ind[2],ind[3],ind[4],ind[5],ind[6],ind[7],ind[8],ind[9],0x00,
+      target.index, count+1)
+
+  windower.packets.inject_outgoing(0x36, menu_item)
 end
 
 windower.register_event('load', function()
