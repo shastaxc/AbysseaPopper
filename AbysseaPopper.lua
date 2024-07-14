@@ -137,6 +137,45 @@ function get_target()
   end
 end
 
+-- Returns table of the required items (indexed by item ID) that includes
+-- their position in player inventory. If item is not found, it is excluded
+-- from the returned table.
+-- items_to_find: Set (required)
+function items_in_inventory(items_to_find)
+  local inventory = windower.ffxi.get_items(0)
+  local found_items = T{}
+  for required_item in items_to_find:it() do
+    for _,inv_item in pairs(inventory) do
+      if inv_item.id == required_item.id then
+        found_items[inv_item.id] = inv_item
+        break
+      end
+    end
+  end
+  return found_items
+end
+
+-- Required items in resource file format. Set.
+-- Found_items in windower.ffxi.get_items(bag) format. Meta Table.
+-- Both lists have "id" field that can be used for comparison.
+function str_missing_items(required_items, found_items)
+  local str = ''
+  local num_missing = 0
+  for req_item in required_items:it() do
+    if not found_items[req_item.id] then
+      num_missing = num_missing + 1
+      -- Item is missing, add to list
+      -- Add delineator if not the first missing item.
+      if num_missing > 1 then
+        str = str..', '
+      end
+      str = str..req_item.en
+    end
+  end
+
+  return str
+end
+
 -- Attempt to pop NM based on current target
 function pop_target()
   -- Get target info
@@ -146,10 +185,20 @@ function pop_target()
     if info then
       -- If NM requires items to pop, attempt to trade
       if info.required_items:length() > 0 then
-        if info.required_items:length() == 1 then
-          -- If only 1 required item, we can use in-game command to pop
-          local req_item = info.required_items[1]
-          windower.send_command('@input /item "'..req_item.en..'" <t>')
+        -- Check if items are in inventory. If not, display warning.
+        local found_inv_items = items_in_inventory(info.required_items)
+        if found_inv_items:length() < info.required_items:length() then
+          -- Not all items found in inventory. Display warning.
+          local missing_items = str_missing_items(info.required_items, found_inv_items)
+          windower.add_to_chat(001, chat_d_blue..'AbysseaPopper: Missing items ['..missing_items..'].')
+        else -- Not missing items
+          if info.required_items:length() == 1 then
+            -- If only 1 required item, we can use in-game command to pop
+            local req_item = info.required_items[1]
+            windower.send_command('@input /item "'..req_item.en..'" <t>')
+          else
+            -- TODO: Trade multiple items, bypassing trade window.
+          end
         end
       elseif info.required_key_items:length() > 0 then
         -- If NM requires key items to pop, deal with the popup menu
