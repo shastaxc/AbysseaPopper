@@ -90,20 +90,42 @@ allowed_trade_status = S{
 -- Index by spawn point ID
 pop_info = T{
   -- Abyssea - Konschtat
+  -- [00000000] = {id=00000000, name='', required_items=S{}, required_key_items=S{}},
   -- Abyssea - Tahrongi
+  -- [00000000] = {id=00000000, name='', required_items=S{}, required_key_items=S{}},
   -- Abyssea - La Theine
-  [17318479] = {id=17318479, name='La Theine Liege', required_items=S{2897}, required_key_items=S{}},
+  [17318476] = {id=17318476, name='Adamaster', required_items=S{2894}, required_key_items=S{}},
   [17318480] = {id=17318480, name='Baba Yaga', required_items=S{2898}, required_key_items=S{}},
+  [17318485] = {id=17318485, name='Briareus', required_items=S{}, required_key_items=S{1482, 1483, 1484}},
+  [17318488] = {id=17318488, name='Briareus', required_items=S{}, required_key_items=S{1482, 1483, 1484}},
+  [17318491] = {id=17318491, name='Briareus', required_items=S{}, required_key_items=S{1482, 1483, 1484}},
   [17318486] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
   [17318489] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
   [17318492] = {id=17318489, name='Carabosse', required_items=S{}, required_key_items=S{1485, 1486}},
+  [17318479] = {id=17318479, name='La Theine Liege', required_items=S{2897}, required_key_items=S{}},
+  [17318473] = {id=17318473, name='Dozing Dorian', required_items=S{2891}, required_key_items=S{}},
+  [17318478] = {id=17318478, name='Grandgousier', required_items=S{2896}, required_key_items=S{}},
+  [17318490] = {id=17318490, name='Hadhayosh', required_items=S{}, required_key_items=S{1478, 1479, 1480, 1481}},
+  [17318484] = {id=17318484, name='Lugarhoo', required_items=S{2902}, required_key_items=S{}},
+  [17318475] = {id=17318475, name='Megantereon', required_items=S{2893}, required_key_items=S{}},
+  [17318481] = {id=17318481, name='Nguruvilu', required_items=S{2899}, required_key_items=S{}},
+  [17318477] = {id=17318477, name='Pantagruel', required_items=S{2895}, required_key_items=S{}},
+  [17318482] = {id=17318482, name='Poroggo Dom Juan', required_items=S{2900}, required_key_items=S{}},
+  [17318483] = {id=17318483, name='Toppling Tuber', required_items=S{2901}, required_key_items=S{}},
+  [17318474] = {id=17318474, name='Trudging Thomas', required_items=S{2892}, required_key_items=S{}},
   -- Abyssea - Attohwa
+  -- [00000000] = {id=00000000, name='', required_items=S{}, required_key_items=S{}},
   -- Abyssea - Misareaux
+  -- [00000000] = {id=00000000, name='', required_items=S{}, required_key_items=S{}},
   [17662564] = {id=17662564, name='Karkatakam', required_items=S{3093, 3094}, required_key_items=S{}},
   -- Abyssea - Vunkerl
+  -- [00000000] = {id=00000000, name='', required_items=S{}, required_key_items=S{}},
   -- Abyssea - Altepa
+  -- [00000000] = {id=00000000, name='', required_items=S{}, required_key_items=S{}},
   -- Abyssea - Uleguerand
+  -- [00000000] = {id=00000000, name='', required_items=S{}, required_key_items=S{}},
   -- Abyssea - Grauberg
+  -- [00000000] = {id=00000000, name='', required_items=S{}, required_key_items=S{}},
 }
 -- Replace required_items and required_key_items with more detailed objects
 for entry in pop_info:it() do
