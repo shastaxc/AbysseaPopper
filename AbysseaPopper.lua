@@ -465,7 +465,7 @@ function pop_target()
         if found_inv_items:length() < info.required_items:length() then
           -- Not all items found in inventory. Display warning.
           local missing_items = str_missing_items(info.required_items, found_inv_items)
-          windower.add_to_chat(001, chat_red..'AbysseaPopper: Missing items ['..missing_items..'].')
+          windower.add_to_chat(001, chat_red..'AbysseaPopper: Missing items ['..missing_items..']')
         else -- Not missing items
           if info.required_items:length() == 1 then
             -- If only 1 required item, we can use in-game command to pop
@@ -482,7 +482,7 @@ function pop_target()
         local ki_owned = find_ki_owned(info.required_key_items)
         if ki_owned:length() < info.required_key_items:length() then
           local missing_ki = str_missing_ki(info.required_key_items, ki_owned)
-          windower.add_to_chat(001, chat_red..'AbysseaPopper: Missing items ['..missing_ki..'].')
+          windower.add_to_chat(001, chat_red..'AbysseaPopper: Missing items ['..missing_ki..']')
         else -- Not missing key items
           -- Inject packet to interact with spawn point, let user navigate menu manually
           local p = packets.new('outgoing', 0x01A, {
