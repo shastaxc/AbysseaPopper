@@ -37,7 +37,7 @@ require('sets')
 require('pack')
 
 res = require('resources')
--- inspect = require('inspect')
+packets = require('packets')
 
 chat_purple = string.char(0x1F, 200)
 chat_grey = string.char(0x1F, 160)
@@ -390,14 +390,61 @@ function str_missing_items(required_items, found_items)
   local str = ''
   local num_missing = 0
   for _,req_item in pairs(required_items) do
+    -- Item is missing, add to list
+    -- Add delineator if not the first missing item.
     if not found_items[req_item.id] then
       num_missing = num_missing + 1
-      -- Item is missing, add to list
-      -- Add delineator if not the first missing item.
       if num_missing > 1 then
         str = str..', '
       end
       str = str..req_item.en
+    end
+  end
+
+  return str
+end
+
+-- Returns Set of the key item IDs the player owns that is subset of the input Set.
+-- If player does not own the KI, it is not included in the returned set.
+-- items_to_find: Set (required)
+function find_ki_owned(ki_to_find)
+  local status_table = S{}
+  local owned_ki = windower.ffxi.get_key_items()
+
+  for _, find_ki in pairs(ki_to_find) do
+    for _, owned_id in pairs(owned_ki) do
+      if owned_id == find_ki.id then
+        status_table:add(find_ki.id)
+        break
+      end
+    end
+  end
+
+  return status_table
+end
+
+-- required_ki: Required key items in resource file format. Set.
+-- owned_ki: Set. Contains IDs of key items owned.
+-- Both lists have "id" field that can be used for comparison.
+function str_missing_ki(required_ki, owned_ki)
+  local str = ''
+  local num_missing = 0
+  for _, req_ki in pairs(required_ki) do
+    local found = false
+    for _, owned_id in pairs(owned_ki) do
+      if owned_id == req_ki.id then
+        found = true
+        break
+      end
+    end
+    -- Item is missing, add to list
+    -- Add delineator if not the first missing item.
+    if not found then
+      num_missing = num_missing + 1
+      if num_missing > 1 then
+        str = str..', '
+      end
+      str = str..req_ki.en
     end
   end
 
@@ -418,7 +465,7 @@ function pop_target()
         if found_inv_items:length() < info.required_items:length() then
           -- Not all items found in inventory. Display warning.
           local missing_items = str_missing_items(info.required_items, found_inv_items)
-          windower.add_to_chat(001, chat_d_blue..'AbysseaPopper: Missing items ['..missing_items..'].')
+          windower.add_to_chat(001, chat_red..'AbysseaPopper: Missing items ['..missing_items..'].')
         else -- Not missing items
           if info.required_items:length() == 1 then
             -- If only 1 required item, we can use in-game command to pop
@@ -430,7 +477,20 @@ function pop_target()
           end
         end
       elseif info.required_key_items:length() > 0 then
-        -- If spawn point requires key items, maybe handle this in the future
+        -- If spawn point requires key items...
+        -- Warn user if missing KIs
+        local ki_owned = find_ki_owned(info.required_key_items)
+        if ki_owned:length() < info.required_key_items:length() then
+          local missing_ki = str_missing_ki(info.required_key_items, ki_owned)
+          windower.add_to_chat(001, chat_red..'AbysseaPopper: Missing items ['..missing_ki..'].')
+        else -- Not missing key items
+          -- Inject packet to interact with spawn point, let user navigate menu manually
+          local p = packets.new('outgoing', 0x01A, {
+            ["Target"] = target.id,
+            ["Target Index"] = target.index,
+          })
+          packets.inject(p)
+        end
       end
     end
   end
