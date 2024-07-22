@@ -1,4 +1,4 @@
-# Metronome
+# AbysseaPopper
 FFXI Windower v4 addon that helps with spawning force-spawned Notorious Monsters (NMs).
 
 ## How to Install
